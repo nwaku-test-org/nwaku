@@ -66,24 +66,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
 
+
+
     name: build-v2-${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
 
-      - name: Get submodules versions
-        id: submodules
-        shell: bash
-        run: |
-          echo "nim-hash=$(git rev-parse HEAD:vendor/nimbus-build-system)" >> $GITHUB_OUTPUT
-
-      - name: Cache nim
+      - name: Cache submodules
         uses: actions/cache@v3
+        id: submodules-cache
         with:
-          path: vendor/nimbus-build-system/vendor/Nim/bin
-          key: ${{ runner.os }}-nim-${{ steps.submodules.outputs.nim-hash }}
+          path: vendor/
+          key: ${{ runner.os }}-submodules-${{ hashFiles('./.gitmodules') }}
+
+      - name: Submodules
+        if: steps.submodules-cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive
 
       - name: Build binaries
         run: make V=1 LOG_LEVEL=DEBUG v2 tools
