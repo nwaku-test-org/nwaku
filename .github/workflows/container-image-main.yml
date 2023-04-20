@@ -16,7 +16,7 @@ jobs:
     env: ${{ matrix.env }}
     timeout-minutes: 60
 
-    name: ${{ matrix.platform }} - ${{ matrix.env.NPROC }} processes
+    name: Build assets and image - ${{ matrix.platform }} - ${{ matrix.env.NPROC }} processes
 
     steps:
       - name: Checkout code
@@ -46,5 +46,11 @@ jobs:
           tar -cvzf nim-waku-${{ matrix.platform }}.tar.gz ./build/
 
       - name: Build image
+        env:
+          QUAY_USER: ${{ secrets.QUAY_USER }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         run: |
-          docker build -t statusteam/waku:$(git describe --abbrev=6 --always --tags) -f Dockerfile.release
+          image=quay.io/vpavlin0/waku:$(git describe --abbrev=6 --always --tags)
+          docker build -t ${image} -f Dockerfile.release .
+          docker login -u="${QUAY_USER}"" -p="${QUAY_PASSWORD}" quay.io 
+          docker push ${image}
