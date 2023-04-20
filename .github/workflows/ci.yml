@@ -87,5 +87,3 @@ jobs:
 
       - name: Build binaries
         run: ls vendor/nimbus-build-system/vendor/Nim/bin
-
-  
