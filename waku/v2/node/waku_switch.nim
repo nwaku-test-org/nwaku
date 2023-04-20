@@ -120,3 +120,5 @@ proc newWakuSwitch*(
       b = b.withServices(services)
 
     b.build()
+
+
