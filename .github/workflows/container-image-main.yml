@@ -52,5 +52,5 @@ jobs:
         run: |
           image=quay.io/vpavlin0/waku:$(git describe --abbrev=6 --always --tags)
           docker build -t ${image} -f Dockerfile.release .
-          docker login -u="${QUAY_USER}"" -p="${QUAY_PASSWORD}" quay.io 
+          docker login -u="${QUAY_USER}" -p="${QUAY_PASSWORD}" quay.io 
           docker push ${image}
