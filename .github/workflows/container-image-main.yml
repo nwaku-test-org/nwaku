@@ -51,6 +51,6 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         run: |
           image=quay.io/vpavlin0/waku:$(git describe --abbrev=6 --always --tags)
-          docker build -t ${image} -f Dockerfile.release .
+          docker build -t ${image} -f Dockerfile.release --label quay.expires-after=7d .
           docker login -u="${QUAY_USER}" -p="${QUAY_PASSWORD}" quay.io 
           docker push ${image}
