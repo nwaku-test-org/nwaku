@@ -46,4 +46,4 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t statusteam/waku:$(git describe --abbrev=6 --always --tags)
+          docker build -t statusteam/waku:$(git describe --abbrev=6 --always --tags) -f Dockerfile.release
