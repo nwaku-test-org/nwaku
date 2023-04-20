@@ -1,8 +1,5 @@
 FROM alpine:3.16 as prod
 
-
-ARG MAKE_TARGET=wakunode2
-
 LABEL maintainer="jakub@status.im"
 LABEL source="https://github.com/waku-org/nwaku"
 LABEL description="Wakunode: Waku and Whisper client"
@@ -18,13 +15,13 @@ RUN apk add --no-cache libgcc pcre-dev
 RUN ln -s /usr/lib/libpcre.so /usr/lib/libpcre.so.3
 
 # Copy to separate location to accomodate different MAKE_TARGET values
-COPY ./build/$MAKE_TARGET /usr/local/bin/
+COPY ./build/* /opt/waku/
 
 # Copy migration scripts for DB upgrades
 COPY ./migrations/ /app/migrations/
 
 # Symlink the correct wakunode binary
-RUN ln -sv /usr/local/bin/$MAKE_TARGET /usr/bin/wakunode
+RUN ln -sv /opt/waku/* /usr/bin/
 
 ENTRYPOINT ["/usr/bin/wakunode"]
 # By default just show help if called without arguments
