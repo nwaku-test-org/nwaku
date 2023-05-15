@@ -1,0 +1,31 @@
+name: Static artifacts builders
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build-all:
+    # TODO: Add matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        env:
+          DEBIAN_FRONTEND: "noninteractive"
+          TZ: "Etc/UTC"
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install binfmt-support qemu-user-static
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build images
+        run: |
+          cd docker/base
+          ./build.sh --registry quay.io --repository vpavlin0 --latest --push all
