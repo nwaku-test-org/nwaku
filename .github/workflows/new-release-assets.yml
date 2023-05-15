@@ -1,0 +1,39 @@
+name: release-v2
+on:
+  pull_request_target:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  NPROC: 2
+  MAKEFLAGS: "-j${NPROC}"
+  NIMFLAGS: "--parallelBuild:${NPROC}"
+
+jobs:
+  build-static:
+    # TODO: Add matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Get submodules versions
+        id: submodules
+        shell: bash
+        run: |
+          echo "nim-hash=$(git rev-parse HEAD:vendor/nimbus-build-system)" >> $GITHUB_OUTPUT
+
+      - name: Cache nim
+        uses: actions/cache@v3
+        with:
+          path: vendor/nimbus-build-system/vendor/Nim/bin
+          key: ${{ runner.os }}-nim-${{ steps.submodules.outputs.nim-hash }}
+
+      - name: Build binaries
+        run: |
+          make V=1 LOG_LEVEL=DEBUG dist-amd4
