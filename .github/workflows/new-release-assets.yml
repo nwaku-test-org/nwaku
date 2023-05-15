@@ -15,7 +15,7 @@ env:
   NIMFLAGS: "--parallelBuild:${NPROC}"
 
 jobs:
-  build-static:
+  build-static-amd64:
     # TODO: Add matrix
     runs-on: ubuntu-latest
     steps:
