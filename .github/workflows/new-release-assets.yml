@@ -1,6 +1,8 @@
 name: release-v2
 on:
-  pull_request_target:
+  push:
+    branches:
+      - master
 
 
 concurrency:
