@@ -1,0 +1,78 @@
+name: Upload Release Asset
+
+on:
+  push:
+    tags:
+    - 'v*-rc.*' # "e.g. v0.4"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+        # We need to do this because of how github cache works
+        # I am not sure we can move the cache file, so if we do not do this
+        # make update breaks because the cached compiler is there where the submodules
+        # are meant to go.
+      # - name: Submodules
+      #   run: |
+      #     git submodule update --init --recursive
+          
+      # - name: Cache nim
+      #   uses: actions/cache@v1
+      #   with:
+      #     path: vendor/nimbus-build-system/vendor/Nim/bin
+      #     key: ${{ runner.os }}-${{ matrix.env.NPROC }}-nim-${{ hashFiles('.gitmodules') }}
+
+      - name: build artifacts
+        run: |
+          mkdir -p build/
+          echo "echo wakunode2" > ./build/wakunode2
+          chmod +x ./build/wakunode2
+          tar -cvzf nim-waku-${{ matrix.platform }}.tar.gz ./build/
+
+#make -j2 NIMFLAGS="--parallelBuild:${NPROC}" QUICK_AND_DIRTY_COMPILER=1 CI=false wakunode2
+            
+      
+      - name: upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: nim-waku-${{ matrix.platform }}.tar.gz
+          path: nim-waku-${{ matrix.platform }}.tar.gz
+
+  create-release-candidate:
+    runs-on: ubuntu-latest
+    needs: [ build-and-publish ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+      - name: generate release notes
+        run: |
+          docker run \
+              -t \
+              --rm \
+              -v ${PWD}:/opt/sv4git/repo:z \
+              -u $(id -u) \
+              docker.io/wakuorg/sv4git:latest \
+                release-notes -t v0.17.0 |\
+                sed -E 's@#([0-9]+)@[#\1](https://github.com/waku-org/nwaku/issues/\1)@g' > release_notes.md
+
+          cat release_notes.md
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: true
+          body_path: release_notes.md
+          files: |
+            nim-waku-${{ matrix.platform }}.tar.gz
+      
