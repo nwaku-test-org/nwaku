@@ -31,16 +31,16 @@ jobs:
           mkdir -p build/
           echo "echo wakunode2" > ./build/wakunode2
           chmod +x ./build/wakunode2
-          tar -cvzf nim-waku-${{ matrix.platform }}.tar.gz ./build/
+          tar -cvzf nim-waku.tar.gz ./build/
 
 #make -j2 NIMFLAGS="--parallelBuild:${NPROC}" QUICK_AND_DIRTY_COMPILER=1 CI=false wakunode2
             
       
       - name: upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: nim-waku-${{ matrix.platform }}.tar.gz
-          path: nim-waku-${{ matrix.platform }}.tar.gz
+          name: wakunode2
+          path: nim-waku.tar.gz
 
   create-release-candidate:
     runs-on: ubuntu-latest
@@ -50,29 +50,30 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          ref: master
       - name: download artifacts
         uses: actions/download-artifact@v2
       - name: generate release notes
         run: |
+          git status
           docker run \
               -t \
               --rm \
               -v ${PWD}:/opt/sv4git/repo:z \
               -u $(id -u) \
               docker.io/wakuorg/sv4git:latest \
-                release-notes -t v0.17.0 |\
+                release-notes -t ${{github.ref_name}} |\
                 sed -E 's@#([0-9]+)@[#\1](https://github.com/waku-org/nwaku/issues/\1)@g' > release_notes.md
 
           cat release_notes.md
+          ls -la
       - name: Create release
-        id: create_release
-        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          prerelease: true
-          body_path: release_notes.md
-          files: |
-            nim-waku-${{ matrix.platform }}.tar.gz
+        run: |
+          gh release view ${{github.ref_name}} &>/dev/null && gh release delete -y ${{github.ref_name}}
+          gh release create ${{github.ref_name}} --prerelease --verify-tag \
+            --title '${{github.ref_name}}' --notes-file release_notes.md \
+            wakunode2/*
+        
       
