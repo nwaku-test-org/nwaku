@@ -13,7 +13,7 @@ release-notes:
           commit-types: [fix, bug]
         - name: Changes
           section-type: commits
-          commit-types: [chore, docs, build, refactor, docker]
+          commit-types: [chore, docs, build, refactor, docker, ""]
 
 commit-message:
 
