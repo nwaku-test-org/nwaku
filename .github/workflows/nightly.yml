@@ -64,12 +64,14 @@ jobs:
                 release-notes |\
                 sed -E 's@#([0-9]+)@[#\1](https://github.com/waku-org/nwaku/issues/\1)@g' > release_notes.md
 
+          sed -i "s/^## .*/$(date)/" release_notes.md
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release view ${RELEASE_NAME} &>/dev/null && gh release delete -y ${RELEASE_NAME} --cleanup-tag
-          gh release create ${RELEASE_NAME} --prerelease \
+          gh release create ${RELEASE_NAME} --prerelease  --target master \
             --title ${RELEASE_NAME} --notes-file release_notes.md \
             wakunode2/*
         
