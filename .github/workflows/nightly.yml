@@ -1,0 +1,76 @@
+name: Nightly Release
+
+on:
+  schedule:
+    - cron: 13 3 * * *
+  workflow_dispatch:
+
+env:
+  RELEASE_NAME: nightly
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get submodules hash
+        id: submodules
+        run: |
+          echo "hash=$(git submodule status | awk '{print $1}' | sort | shasum -a 256 | sed 's/[ -]*//g')" >> $GITHUB_OUTPUT
+
+      - name: Cache submodules
+        uses: actions/cache@v3
+        with:
+          path: |
+            vendor/
+            .git/modules
+          key: ${{ runner.os }}-vendor-modules-${{ steps.submodules.outputs.hash }}
+
+
+      - name: build artifacts
+        run: |
+          make -j2 NIMFLAGS="--parallelBuild:2" QUICK_AND_DIRTY_COMPILER=1 V=1 wakunode2
+          tar -cvzf nim-waku.tar.gz ./build/wakunode2
+
+          ls build
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wakunode2
+          path: nim-waku.tar.gz
+
+  create-release-candidate:
+    runs-on: ubuntu-latest
+    needs: [ build-and-publish ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: master
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+      - name: generate release notes
+        run: |
+          docker run \
+              -t \
+              --rm \
+              -v ${PWD}:/opt/sv4git/repo:z \
+              -u $(id -u) \
+              docker.io/wakuorg/sv4git:latest \
+                release-notes |\
+                sed -E 's@#([0-9]+)@[#\1](https://github.com/waku-org/nwaku/issues/\1)@g' > release_notes.md
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view ${RELEASE_NAME} &>/dev/null && gh release delete -y ${RELEASE_NAME} --cleanup-tag
+          gh release create ${RELEASE_NAME} --prerelease \
+            --title ${RELEASE_NAME} --notes-file release_notes.md \
+            wakunode2/*
+        
+      
