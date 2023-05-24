@@ -55,7 +55,6 @@ jobs:
         uses: actions/download-artifact@v2
       - name: generate release notes
         run: |
-          git status
           docker run \
               -t \
               --rm \
@@ -65,8 +64,6 @@ jobs:
                 release-notes -t ${{github.ref_name}} |\
                 sed -E 's@#([0-9]+)@[#\1](https://github.com/waku-org/nwaku/issues/\1)@g' > release_notes.md
 
-          cat release_notes.md
-          ls -la
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
