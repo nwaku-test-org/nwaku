@@ -28,9 +28,11 @@ jobs:
 
       - name: build artifacts
         run: |
-          make -j2 NIMFLAGS="--parallelBuild:${NPROC}" QUICK_AND_DIRTY_COMPILER=1 CI=false wakunode2
-          tar -cvzf nim-waku.tar.gz ./build/
-      
+          make -j2 NIMFLAGS="--parallelBuild:2" QUICK_AND_DIRTY_COMPILER=1 V=1 wakunode2 tools
+          tar -cvzf nim-waku.tar.gz ./build/wakunode2
+
+          ls build
+
       - name: upload artifacts
         uses: actions/upload-artifact@v3
         with:
