@@ -121,4 +121,3 @@ proc newWakuSwitch*(
 
     b.build()
 
-
