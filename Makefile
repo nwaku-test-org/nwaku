@@ -171,7 +171,7 @@ testcommon: | build deps
 
 testwaku2: | build deps librln
 	echo -e $(BUILD_MSG) "build/$@" && \
-		$(ENV_SCRIPT) nim test2 $(NIM_PARAMS) $(EXPERIMENTAL_PARAMS) waku.nims
+		$(ENV_SCRIPT) nim test2 -d:os=$(shell uname) $(NIM_PARAMS) $(EXPERIMENTAL_PARAMS) waku.nims
 
 wakunode2: | build deps librln
 	echo -e $(BUILD_MSG) "build/$@" && \
@@ -301,9 +301,9 @@ endif
 
 cwaku_example: | build libwaku
 	echo -e $(BUILD_MSG) "build/$@" && \
-		cp nimcache/release/libwaku/libwaku.h ./examples/cbindings/ && \
 		cc -o "build/$@" \
 		./examples/cbindings/waku_example.c \
+		./examples/cbindings/base64.c \
 		-lwaku -Lbuild/ \
 		-pthread -ldl -lm \
 		-lminiupnpc -Lvendor/nim-nat-traversal/vendor/miniupnp/miniupnpc/build/ \
