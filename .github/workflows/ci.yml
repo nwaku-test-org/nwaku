@@ -197,4 +197,5 @@ jobs:
 
       - name: Build
         run: |
+          ls
           docker build -t quay.io/waku/nwaku:pr-${{ github.event.pull_request.number }} -f Dockerfile.binary .
