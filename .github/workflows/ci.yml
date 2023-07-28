@@ -200,4 +200,6 @@ jobs:
       - name: Build
         run: |
           ls
-          docker build -t quay.io/waku/nwaku:pr-${{ github.event.pull_request.number }} -f Dockerfile.binary .
+          docker login -u $(QUAY_USER) -p $(QUAY_PASSWORD) quay.io
+          docker build -t quay.io/vpavlin0/nwaku:pr-${{ github.event.pull_request.number }} -f Dockerfile.binary --label quay.expires-after=7d .
+          docker push quay.io/vpavlin0/nwaku:pr-${{ github.event.pull_request.number }}
