@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: wakunode2
-          path: ./build
+          path: ./build/wakunode2
           retention-days: 2
 
   test-v2:
@@ -194,6 +194,8 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v2
+        with:
+          path: build/wakunode2
 
       - name: Build
         run: |
