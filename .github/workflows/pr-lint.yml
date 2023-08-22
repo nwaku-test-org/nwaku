@@ -1,7 +1,7 @@
 name: "Lint PR"
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - edited
@@ -48,3 +48,43 @@ jobs:
         with:   
           header: pr-title-lint-error
           delete: true
+
+  labels:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout code
+      id: checkout
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          config:
+          - 'wakunode2/external_config.nim'
+          - 'networkmonitor/networkmonitor_config.nim'
+          - 'chat2/config_chat2.nim'
+          - 'chat2bridge/config_chat2bridge.nim'
+
+          db_schema:
+          - 'waku/waku_archive/driver/postgres_driver/postgres_driver.nim'
+          - 'waku/waku_archive/driver/sqlite_driver/queries.nim'
+    - name: Comment config change
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: ${{steps.filter.outputs.config == 'true'}}
+      with:
+        header: pr-title-lint-error
+        message: |
+          This PR may contain changes to configuration options of one of the apps.
+
+          Please make sure the label `release-notes` is added in case it actually does change the config options.
+
+    - name: Comment DB schema change
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: ${{steps.filter.outputs.db_schema == 'true'}}
+      with:
+        header: pr-title-lint-error
+        message: |
+          This PR may contain changes to database schema of one of the drivers.
+
+          Please make sure the label `release-notes` is added in case it actually does change the DB schema and verify nwaku can be successfully migrated to this new schema.
