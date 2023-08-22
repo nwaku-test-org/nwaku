@@ -36,6 +36,7 @@ type
     configFile* {.
       desc: "Loads configuration from a TOML file (cmd-line parameters take precedence)"
       name: "config-file" }: Option[InputFile]
+    #change
 
     ##  Application-level configuration
     protectedTopics* {.

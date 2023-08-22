@@ -75,6 +75,8 @@ proc createTableQuery(table: string): SqlQueryStr =
   " CONSTRAINT messageIndex PRIMARY KEY (storedAt, id, pubsubTopic)" &
   ") WITHOUT ROWID;"
 
+  #change
+
 proc createTable*(db: SqliteDatabase): DatabaseResult[void] =
   let query = createTableQuery(DbTable)
   discard ?db.query(query, proc(s: ptr sqlite3_stmt) = discard)
