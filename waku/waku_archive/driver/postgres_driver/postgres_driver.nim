@@ -323,3 +323,4 @@ proc sleep*(s: PostgresDriver, seconds: int):
     return err("exception sleeping: " & getCurrentExceptionMsg())
 
   return ok()
+
