@@ -7,3 +7,4 @@
 ## An implementation of [Waku v2](https://rfc.vac.dev/spec/10/) in nim.
 import waku_node as wakunode2
 export wakunode2
+
